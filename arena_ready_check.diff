@@ -1,0 +1,116 @@
+diff --git a/src/server/game/Battlegrounds/Battleground.cpp b/src/server/game/Battlegrounds/Battleground.cpp
+index e8c3446..d4c4c7c 100644
+--- a/src/server/game/Battlegrounds/Battleground.cpp
++++ b/src/server/game/Battlegrounds/Battleground.cpp
+@@ -464,6 +464,9 @@ inline void Battleground::_ProcessJoin(uint32 diff)
+     {
+         m_Events |= BG_STARTING_EVENT_2;
+         SendMessageToAll(StartMessageIds[BG_STARTING_EVENT_SECOND], CHAT_MSG_BG_SYSTEM_NEUTRAL);
++
++        if (this->isArena())
++            this->SendArenaReadyCheck();
+     }
+     // After 30 or 15 seconds, warning is signaled
+     else if (GetStartDelayTime() <= StartDelayTimes[BG_STARTING_EVENT_THIRD] && !(m_Events & BG_STARTING_EVENT_3))
+@@ -489,6 +492,13 @@ inline void Battleground::_ProcessJoin(uint32 diff)
+             for (BattlegroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
+                 if (Player* player = ObjectAccessor::FindPlayer(itr->first))
+                 {
++                    if (!m_ArenaReadyCheckMap.count(itr->first))
++                    {
++                        WorldPacket data(0x3C6, 0x1);
++                        data << uint8(0x1);
++                        player->GetSession()->SendPacket(&data);
++                    }
++
+                     // BG Status packet
+                     WorldPacket status;
+                     BattlegroundQueueTypeId bgQueueTypeId = sBattlegroundMgr->BGQueueTypeId(m_TypeID, GetArenaType());
+@@ -519,6 +529,7 @@ inline void Battleground::_ProcessJoin(uint32 diff)
+                 }
+ 
+             CheckWinConditions();
++            m_ArenaReadyCheckMap.clear();
+         }
+         else
+         {
+@@ -1832,3 +1843,28 @@ uint8 Battleground::GetUniqueBracketId() const
+ {
+     return GetMinLevel() / 10;
+ }
++
++void Battleground::SendArenaReadyCheck() const
++{
++    WorldPacket packet_0x1(0x051, 0x17);
++    packet_0x1.appendPackGUID(0xFFFFFFFF);
++    packet_0x1 << uint8(0x0);
++    packet_0x1 << std::string("Arena");
++    packet_0x1 << uint8(0x0);
++    packet_0x1 << uint8(0xa);
++    packet_0x1 << uint8(0x0);
++    packet_0x1 << uint8(0x4);
++    packet_0x1 << uint8(0x0);
++
++    WorldPacket packet_0x2(0x322, 0x8);
++    packet_0x2 << uint64(0xFFFFFFFF);
++
++    for (const auto itr : m_Players)
++    {
++        if (const Player* const player = ObjectAccessor::FindPlayer(itr.first))
++        {
++            player->GetSession()->SendPacket(&packet_0x1);
++            player->GetSession()->SendPacket(&packet_0x2);
++        }
++    }
++}
+diff --git a/src/server/game/Battlegrounds/Battleground.h b/src/server/game/Battlegrounds/Battleground.h
+index 001c33c..9bd5eb8 100644
+--- a/src/server/game/Battlegrounds/Battleground.h
++++ b/src/server/game/Battlegrounds/Battleground.h
+@@ -465,6 +465,9 @@ class Battleground
+ 
+         virtual uint32 GetPrematureWinner();
+ 
++        std::set<uint64> m_ArenaReadyCheckMap;
++        void SendArenaReadyCheck() const;
++
+         // because BattleGrounds with different types and same level range has different m_BracketId
+         uint8 GetUniqueBracketId() const;
+ 
+diff --git a/src/server/game/Handlers/GroupHandler.cpp b/src/server/game/Handlers/GroupHandler.cpp
+index 8d044e7..42719e8 100644
+--- a/src/server/game/Handlers/GroupHandler.cpp
++++ b/src/server/game/Handlers/GroupHandler.cpp
+@@ -32,6 +32,7 @@
+ #include "World.h"
+ #include "WorldPacket.h"
+ #include "WorldSession.h"
++#include "Battleground.h"
+ 
+ class Aura;
+ 
+@@ -691,6 +692,9 @@ void WorldSession::HandleRaidReadyCheckOpcode(WorldPacket& recvData)
+ 
+     if (recvData.empty())                                   // request
+     {
++        if (this->GetPlayer()->InArena())
++            return;
++
+         /** error handling **/
+         if (!group->IsLeader(GetPlayer()->GetGUID()) && !group->IsAssistant(GetPlayer()->GetGUID()))
+             return;
+@@ -708,6 +712,14 @@ void WorldSession::HandleRaidReadyCheckOpcode(WorldPacket& recvData)
+         uint8 state;
+         recvData >> state;
+ 
++        if (this->GetPlayer()->InArena() && state)
++        {
++            this->GetPlayer()->GetBattleground()->m_ArenaReadyCheckMap.insert(this->GetPlayer()->GetGUID());
++
++            if (this->GetPlayer()->GetBattleground()->GetPlayersSize() == this->GetPlayer()->GetBattleground()->m_ArenaReadyCheckMap.size())
++                this->GetPlayer()->GetBattleground()->SetStartDelayTime(BG_START_DELAY_NONE);
++        }
++
+         // everything's fine, do it
+         WorldPacket data(MSG_RAID_READY_CHECK_CONFIRM, 9);
+         data << uint64(GetPlayer()->GetGUID());

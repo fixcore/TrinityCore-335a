@@ -1,0 +1,106 @@
+From 1142cdda914e7660a5ce8f47d59d3d0f2ec15b01 Mon Sep 17 00:00:00 2001
+From: Doxramos <green.morgan87@gmai.com>
+Date: Tue, 6 Oct 2015 15:38:13 -0700
+Subject: [PATCH 1/2] DoubleXP
+
+---
+ src/server/scripts/Custom/DoubleXP.h | 40 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 40 insertions(+)
+ create mode 100644 src/server/scripts/Custom/DoubleXP.h
+
+diff --git a/src/server/scripts/Custom/DoubleXP.h b/src/server/scripts/Custom/DoubleXP.h
+new file mode 100644
+index 0000000..02c4770
+--- /dev/null
++++ b/src/server/scripts/Custom/DoubleXP.h
+@@ -0,0 +1,40 @@
++#include "ScriptMgr.h"
++#include "Player.h"
++#include "Chat.h"
++#include "World.h"
++#include "/usr/include/boost/date_time.hpp"
++
++
++class XpWeekend : public PlayerScript 
++{
++	public:
++	XpWeekend() : PlayerScript("XpWeekend") { }
++	void OnGiveXP(Player* player, uint32& amount, Unit* victim)override
++{
++    boost::gregorian::date date(boost::gregorian::day_clock::local_day());
++    auto day = date.day_of_week();
++    if (day == boost::date_time::Friday ||
++        day == boost::date_time::Saturday ||
++        day == boost::date_time::Sunday) {
++
++        amount = amount*2; }
++} 
++	void OnLogin(Player* player, bool firstLogin)
++	{
++		boost::gregorian::date date(boost::gregorian::day_clock::local_day());
++    auto day = date.day_of_week();
++    if (day == boost::date_time::Friday ||
++        day == boost::date_time::Saturday ||
++        day == boost::date_time::Sunday) {
++
++		ChatHandler(player->GetSession()).PSendSysMessage("Double XP is going on now!");
++		}
++
++	}
++
++};
++
++void AddSC_XpWeekend()
++{
++	new XpWeekend();
++}
+\ No newline at end of file
+-- 
+2.6.1.windows.1
+
+
+From ff5a95e4ead0ce6cb58edb171bb4d8dc8acd38df Mon Sep 17 00:00:00 2001
+From: Doxramos <green.morgan87@gmai.com>
+Date: Tue, 6 Oct 2015 15:41:34 -0700
+Subject: [PATCH 2/2] Double XP
+
+---
+ src/server/game/Scripting/ScriptLoader.cpp | 3 ++-
+ src/server/scripts/Custom/CMakeLists.txt   | 1 +
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/src/server/game/Scripting/ScriptLoader.cpp b/src/server/game/Scripting/ScriptLoader.cpp
+index 7c4b117..85369e7 100644
+--- a/src/server/game/Scripting/ScriptLoader.cpp
++++ b/src/server/game/Scripting/ScriptLoader.cpp
+@@ -1415,13 +1415,14 @@ void AddBattlegroundScripts()
+ 
+ #ifdef SCRIPTS
+ /* This is where custom scripts' loading functions should be declared. */
+-
++void AddSC_XPWeekend();
+ #endif
+ 
+ void AddCustomScripts()
+ {
+ #ifdef SCRIPTS
+     /* This is where custom scripts should be added. */
++	AddSC_XPWeekend();
+ 
+ #endif
+ }
+diff --git a/src/server/scripts/Custom/CMakeLists.txt b/src/server/scripts/Custom/CMakeLists.txt
+index 5218f76..8581490 100644
+--- a/src/server/scripts/Custom/CMakeLists.txt
++++ b/src/server/scripts/Custom/CMakeLists.txt
+@@ -13,6 +13,7 @@
+ set(scripts_STAT_SRCS
+   ${scripts_STAT_SRCS}
+ #  ${sources_Custom}
++	Custom/DoubleXP.h
+ )
+ 
+ message("  -> Prepared: Custom")
+-- 
+2.6.1.windows.1
+

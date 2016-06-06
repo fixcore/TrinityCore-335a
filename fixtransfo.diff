@@ -1,0 +1,19 @@
+src/server/game/Entities/Unit/Unit.cpp | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/src/server/game/Entities/Unit/Unit.cpp b/src/server/game/Entities/Unit/Unit.cpp
+index dba6abb..db931b0 100644
+--- a/src/server/game/Entities/Unit/Unit.cpp
++++ b/src/server/game/Entities/Unit/Unit.cpp
+@@ -13111,6 +13111,11 @@ bool Unit::IsInFeralForm() const
+ 
+ bool Unit::IsInDisallowedMountForm() const
+ {
++    if (SpellInfo const* transformSpellInfo = sSpellMgr->GetSpellInfo(getTransForm()))
++        if (transformSpellInfo->Attributes & SPELL_ATTR0_CASTABLE_WHILE_MOUNTED)
++            return false;
++
+     if (ShapeshiftForm form = GetShapeshiftForm())
+     {
+         SpellShapeshiftEntry const* shapeshift = sSpellShapeshiftStore.LookupEntry(form);
+-- 

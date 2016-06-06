@@ -1,0 +1,55 @@
+diff --git a/src/server/game/Entities/Player/Player.cpp b/src/server/game/Entities/Player/Player.cpp
+index 161fca4..8c68d8a 100644
+--- a/src/server/game/Entities/Player/Player.cpp
++++ b/src/server/game/Entities/Player/Player.cpp
+@@ -12486,12 +12486,13 @@ void Player::QuickEquipItem(uint16 pos, Item* pItem)
+     }
+ }
+ 
++extern uint32 GetItemEnchantVisual(Player* player, Item* item);
+ void Player::SetVisibleItemSlot(uint8 slot, Item* pItem)
+ {
+     if (pItem)
+     {
+         SetUInt32Value(PLAYER_VISIBLE_ITEM_1_ENTRYID + (slot * 2), pItem->GetEntry());
+-        SetUInt16Value(PLAYER_VISIBLE_ITEM_1_ENCHANTMENT + (slot * 2), 0, pItem->GetEnchantmentId(PERM_ENCHANTMENT_SLOT));
++        SetUInt16Value(PLAYER_VISIBLE_ITEM_1_ENCHANTMENT + (slot * 2), 0, GetItemEnchantVisual(this, pItem));
+         SetUInt16Value(PLAYER_VISIBLE_ITEM_1_ENCHANTMENT + (slot * 2), 1, pItem->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT));
+     }
+     else
+@@ -24930,6 +24931,7 @@ void Player::AutoStoreLoot(uint8 bag, uint8 slot, uint32 loot_id, LootStore cons
+     }
+ }
+ 
++extern void SetRandomEnchantVisual(Player* player, Item* item);
+ void Player::StoreLootItem(uint8 lootSlot, Loot* loot)
+ {
+     QuestItem* qitem = NULL;
+@@ -25005,6 +25007,7 @@ void Player::StoreLootItem(uint8 lootSlot, Loot* loot)
+         if (loot->containerID > 0)
+             loot->DeleteLootItemFromContainerItemDB(item->itemid);
+ 
++        SetRandomEnchantVisual(this, newitem);
+     }
+     else
+         SendEquipError(msg, NULL, NULL, item->itemid);
+diff --git a/src/server/game/Handlers/LootHandler.cpp b/src/server/game/Handlers/LootHandler.cpp
+index b4f1923..7531bd6 100644
+--- a/src/server/game/Handlers/LootHandler.cpp
++++ b/src/server/game/Handlers/LootHandler.cpp
+@@ -386,6 +386,7 @@ void WorldSession::DoLootRelease(ObjectGuid lguid)
+     loot->RemoveLooter(player->GetGUID());
+ }
+ 
++extern void SetRandomEnchantVisual(Player* player, Item* item);
+ void WorldSession::HandleLootMasterGiveOpcode(WorldPacket& recvData)
+ {
+     uint8 slotid;
+@@ -479,6 +480,7 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPacket& recvData)
+     target->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_TYPE, loot->loot_type, item.count);
+     target->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_EPIC_ITEM, item.itemid, item.count);
+ 
++    SetRandomEnchantVisual(target, newitem);
+     // mark as looted
+     item.count = 0;
+     item.is_looted = true;

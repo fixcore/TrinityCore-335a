@@ -1,0 +1,63 @@
+diff --git a/src/server/game/Handlers/ChatHandler.cpp b/src/server/game/Handlers/ChatHandler.cpp
+index 4ebccc5..d8ef043 100644
+--- a/src/server/game/Handlers/ChatHandler.cpp
++++ b/src/server/game/Handlers/ChatHandler.cpp
+@@ -47,6 +47,18 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
+ 
+     recvData >> type;
+     recvData >> lang;
++/* Chat Min PlayedTime Coded By IranCore.Ir */
++	Player* chatkonande = GetPlayer();
++	{
++	if ((chatkonande->GetTotalPlayedTime() <= sWorld->getIntConfig(CONFIG_INT_CHAT_PLAYED_TIME)) && chatkonande->GetSession()->GetSecurity() == SEC_PLAYER)
++    {
++        std::string adStr = secsToTimeString(sWorld->getIntConfig(CONFIG_INT_CHAT_PLAYED_TIME) - chatkonande->GetTotalPlayedTime());
++        SendNotification("Shoma Bayad %s seconds Dar Server Bazi Konid Ta Dar Server Betonid Chat Konid.", adStr.c_str());
++        recvData.rfinish();
++        return;
++    }
++	}
++/*End Chat MIn Played Time */
+ 
+     if (type >= MAX_CHAT_MSG_TYPE)
+     {
+diff --git a/src/server/game/World/World.cpp b/src/server/game/World/World.cpp
+index cf6ad3f..0f19768 100644
+--- a/src/server/game/World/World.cpp
++++ b/src/server/game/World/World.cpp
+@@ -1239,6 +1239,8 @@ void World::LoadConfigSettings(bool reload)
+         m_int_configs[CONFIG_PACKET_SPOOF_BANMODE] = BAN_ACCOUNT;
+ 
+     m_int_configs[CONFIG_PACKET_SPOOF_BANDURATION] = sConfigMgr->GetIntDefault("PacketSpoof.BanDuration", 86400);
++     // Chat Min Played Time
++    m_int_configs[CONFIG_INT_CHAT_PLAYED_TIME]  = sConfigMgr->GetIntDefault("bastanchatbaplayertime", 60);
+ 
+     // call ScriptMgr if we're reloading the configuration
+     if (reload)
+diff --git a/src/server/game/World/World.h b/src/server/game/World/World.h
+index 9074914..a8eec5e 100644
+--- a/src/server/game/World/World.h
++++ b/src/server/game/World/World.h
+@@ -330,6 +330,7 @@ enum WorldIntConfigs
+     CONFIG_PACKET_SPOOF_BANMODE,
+     CONFIG_PACKET_SPOOF_BANDURATION,
+     CONFIG_ACC_PASSCHANGESEC,
++	CONFIG_INT_CHAT_PLAYED_TIME,
+     INT_CONFIG_VALUE_COUNT
+ };
+ 
+diff --git a/src/server/worldserver/worldserver.conf.dist b/src/server/worldserver/worldserver.conf.dist
+index dbf2a80..2208540 100644
+--- a/src/server/worldserver/worldserver.conf.dist
++++ b/src/server/worldserver/worldserver.conf.dist
+@@ -2839,3 +2839,10 @@ PacketSpoof.BanDuration = 86400
+ 
+ #
+ ###################################################################################################
++############################################Custom#################################################
++#     Chat Min Player Time
++#        Tozihat: In Script Be Shoma Emkane Ino Mide Ke Baraye BaziKonan Time Moshkhas Konid Ta Betonan
++#			Chat Konan Time Chat be Sanie Ast Pas Lotfan Be Sanie Time Ro Vared Konid. 
++#        tanzimate Pishfarz:     3600 Sanie = 60 min
++ 
++bastanchatbaplayertime = 3600
