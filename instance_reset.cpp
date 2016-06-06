@@ -2,10 +2,10 @@
 
 #include "ScriptPCH.h"
 
-class npc_titulos_km : public CreatureScript
+class npc_instances_reset_fixcore : public CreatureScript
 {
 	public:
-		npc_titulos_km() : CreatureScript("npc_titulos_km")
+		npc_instances_reset_fixcore() : CreatureScript("npc_instances_reset_fixcore")
 		{
 		}
 
@@ -75,7 +75,7 @@ class npc_titulos_km : public CreatureScript
 
 };
 
-void AddSC_npc_titulos_km()
+void AddSC_npc_instances_reset_fixcore()
 {
-	new npc_titulos_km();
+	new npc_instances_reset_fixcore();
 }
