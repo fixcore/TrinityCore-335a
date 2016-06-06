@@ -1,0 +1,28 @@
+
+-- idea by 125125
+-- code by slp13at420
+local GM_Gear = {{2586,1},{11508,1},{12064,1},{17,1},{192,1},{23162,4},}; -- {item id, count} -- Robe x1, Slippers x1, Hood x1, Martins Fury x1, Martins Staff x1, Foror's Crate of Endless Tears x4
+
+function GM_gearme(event, player, message, type, language)
+
+        if(message == "#gmgearme")then
+
+                if(player:GetGMRank()>=1)then
+                        
+                        for a=1, #GM_Gear do
+                        
+                                if(player:GetItemCount(GM_Gear[a][1]) < GM_Gear[a][2])then
+                                
+                                        for b=1, GM_Gear[a][2] do
+                                        
+                                                player:AddItem(GM_Gear[a][1], 1)
+                                        end
+                                else
+                                        player:SendBroadcastMessage("You have "..GM_Gear[a][2].." "..GetItemLink(GM_Gear[a][1])..".")
+                                end
+                        end
+                end
+        end
+end
+
+RegisterPlayerEvent(18, GM_gearme)
