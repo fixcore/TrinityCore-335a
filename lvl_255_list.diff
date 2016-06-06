@@ -1,0 +1,16 @@
+diff --git a/src/server/game/Handlers/MiscHandler.cpp b/src/server/game/Handlers/MiscHandler.cpp
+index 758d5af..c72ee87 100644
+--- a/src/server/game/Handlers/MiscHandler.cpp
++++ b/src/server/game/Handlers/MiscHandler.cpp
+@@ -265,9 +265,10 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
+             continue;
+ 
+         // check if target is globally visible for player
++        /* Remove check so Level 255 shows up in who list
+         if (!target->IsVisibleGloballyFor(_player))
+             continue;
+-
++*/
+         // check if target's level is in level range
+         uint8 lvl = target->getLevel();
+         if (lvl < level_min || lvl > level_max)

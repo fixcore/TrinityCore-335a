@@ -1,0 +1,20 @@
+--- /home/marti/sources/test_bgs_mixtas/src/server/game/Handlers/ChatHandler.cpp  2013-03-08 20:08:04.000000000 +0100
++++ test_challenge/src/server/game/Handlers/ChatHandler.cpp        2013-03-10 19:24:11.966856051 +0100
+@@ -1074,6 +1075,7 @@
+  sLog->outError(LOG_FILTER_NETWORKIO, "Player %s (GUID: %u) sent a chatmessage with an invalid language/message type combination",
+  GetPlayer()->GetName().c_str(), GetPlayer()->GetGUIDLow());
+ 
+  recvData.rfinish();
+  return;
+  }
+ }
+ // LANG_ADDON should not be changed nor be affected by flood control
+ else
+ {
++	//Custom - LANG_UNIVERSAL in Duelzone and Mountshop.
++	if(sender->GetZoneId() == 3519 || sender->GetZoneId() == 33 && !HasPermission(RBAC_PERM_TWO_SIDE_INTERACTION_CHAT ))
++	lang = LANG_UNIVERSAL;
+    // send in universal language if player in .gmon mode (ignore spell effects)
+    if (sender->isGameMaster())
+    lang = LANG_UNIVERSAL;
+ else

@@ -1,0 +1,21 @@
+en Battleground.cpp
+
+WorldPacket data;
+    sBattlegroundMgr->BuildPlayerJoinedBattlegroundPacket(&data, player);
+    SendPacketToTeam(team, &data, player, false);
+
+    player->RemoveAurasByType(SPELL_AURA_MOUNTED);
+
++    if (player->getClass() == CLASS_WARLOCK)
++    {
++             player->SummonGameObject(193170, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation(), 0, 0, 0, 0, 120); // create soulwell
++    }
++
++      if (player->getClass() == CLASS_MAGE)
++    {
++         player->SummonGameObject(193061, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation(), 0, 0, 0, 0, 120); // create refreshment table
++    }
+        
+    // add arena specific auras
+    if (isArena())
+    {
