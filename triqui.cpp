@@ -1,4 +1,10 @@
 /*
+DATABASE
+
+https://github.com/FixCore/TrinityCore-335a/blob/Complements-TC/triqui.sql
+*/
+
+/*
 * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
 * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
 *
